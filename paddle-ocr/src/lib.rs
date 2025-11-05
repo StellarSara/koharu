@@ -1,6 +1,6 @@
 use hf_hub::api::sync::Api;
-use image::DynamicImage;
-use ndarray::{s, Array, Ix3};
+use image::{DynamicImage, GenericImageView};
+use ndarray::{s, Array, ArrayView3, ArrayView4, Ix3};
 use ort::{inputs, session::Session, value::TensorRef};
 
 #[derive(Debug)]
@@ -58,8 +58,11 @@ impl PaddleOCR {
         let outputs = self.det_model.run(inputs)?;
         let det_out = outputs[0].try_extract_array::<f32>()?;
 
+        // Convert to 4D view
+        let det_out_4d = det_out.view().into_dimensionality::<ndarray::Ix4>()?;
+
         // Post-process detection output to get bounding boxes
-        let boxes = self.postprocess_detection(&det_out, ratio_h, ratio_w)?;
+        let boxes = Self::postprocess_detection(&det_out_4d, ratio_h, ratio_w)?;
 
         Ok(boxes)
     }
@@ -76,8 +79,11 @@ impl PaddleOCR {
         let outputs = self.rec_model.run(inputs)?;
         let rec_out = outputs[0].try_extract_array::<f32>()?;
 
+        // Convert to 3D view
+        let rec_out_3d = rec_out.view().into_dimensionality::<ndarray::Ix3>()?;
+
         // Post-process recognition output to get text
-        let (text, confidence) = self.postprocess_recognition(&rec_out)?;
+        let (text, confidence) = Self::postprocess_recognition(&self.char_dict, &rec_out_3d)?;
 
         Ok((text, confidence))
     }
@@ -157,7 +163,7 @@ impl PaddleOCR {
         Ok((tensor, ratio_h, ratio_w))
     }
 
-    fn postprocess_detection(&self, output: &ndarray::ArrayView4<f32>, ratio_h: f32, ratio_w: f32) -> anyhow::Result<Vec<Vec<(f32, f32)>>> {
+    fn postprocess_detection(output: &ndarray::ArrayView4<f32>, ratio_h: f32, ratio_w: f32) -> anyhow::Result<Vec<Vec<(f32, f32)>>> {
         // Simple thresholding and contour detection
         // This is a simplified version - PaddleOCR uses more sophisticated post-processing
         let threshold = 0.3;
@@ -247,7 +253,7 @@ impl PaddleOCR {
         Ok(tensor)
     }
 
-    fn postprocess_recognition(&self, output: &ndarray::ArrayView3<f32>) -> anyhow::Result<(String, f32)> {
+    fn postprocess_recognition(char_dict: &[String], output: &ndarray::ArrayView3<f32>) -> anyhow::Result<(String, f32)> {
         // output shape: [1, seq_len, num_classes]
         let seq_len = output.shape()[1];
         
@@ -265,7 +271,7 @@ impl PaddleOCR {
             
             // CTC decoding: skip blanks (index 0) and repeated characters
             if max_index > 0 && max_index != last_index {
-                if let Some(char_str) = self.char_dict.get(max_index - 1) {
+                if let Some(char_str) = char_dict.get(max_index - 1) {
                     text.push_str(char_str);
                     confidences.push(*max_prob);
                 }
