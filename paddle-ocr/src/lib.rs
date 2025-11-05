@@ -1,6 +1,6 @@
 use hf_hub::api::sync::Api;
 use image::{DynamicImage, GenericImageView};
-use ndarray::{s, Array, ArrayView3, ArrayView4, Ix3};
+use ndarray::{s, Array, Ix3};
 use ort::{inputs, session::Session, value::TensorRef};
 
 #[derive(Debug)]
