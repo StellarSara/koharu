@@ -12,6 +12,7 @@ Under the hood, Koharu uses [ort](https://github.com/pykeio/ort) and [candle](ht
 ## Features
 
 - **Automated Workflow**: From image input to translated output, Koharu automates the entire manga translation process.
+- **Multi-Language OCR**: Supports both Japanese (manga-ocr) and Chinese (PaddleOCR) text recognition.
 - **GPU Acceleration**: Leverages NVIDIA GPUs via CUDA for faster processing.
 - **High-Quality Models**: Utilizes state-of-the-art ONNX models for text detection, OCR, and inpainting.
 - **LLM Integration**: Supports various quantized LLM models in GGUF format for translation tasks.
@@ -35,9 +36,10 @@ Koharu relies on a mixin of ONNX models and LLM models to perform various tasks.
 
 Koharu uses several pre-trained models for different tasks:
 
-- [comic-text-detector](https://github.com/dmMaze/comic-text-detector)
-- [manga-ocr](https://github.com/kha-white/manga-ocr)
-- [AnimeMangaInpainting](https://huggingface.co/dreMaz/AnimeMangaInpainting)
+- [comic-text-detector](https://github.com/dmMaze/comic-text-detector) - Text region detection
+- [manga-ocr](https://github.com/kha-white/manga-ocr) - Japanese text recognition
+- [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) - Chinese text detection and recognition
+- [AnimeMangaInpainting](https://huggingface.co/dreMaz/AnimeMangaInpainting) - Text inpainting
 
 The models will be automatically downloaded when you run Koharu for the first time.
 
@@ -101,6 +103,22 @@ bun tauri build --features cuda
 ### Usage
 
 After building, you can run the Koharu binary located in `target/release/`.
+
+#### OCR Options
+
+Koharu provides multiple OCR engines optimized for different languages:
+
+1. **Manga OCR** (Default): Best for Japanese manga text
+   - Optimized for vertical Japanese text
+   - Works with the `detect` + `ocr` workflow
+   
+2. **PaddleOCR**: Best for Chinese text
+   - Supports simplified and traditional Chinese characters
+   - Can be used with:
+     - `ocr_paddle`: Use PaddleOCR for recognition on detected regions
+     - `detect_and_ocr_paddle`: Full pipeline with PaddleOCR's own detection and recognition
+
+To use PaddleOCR, you'll need to expose the commands through the UI or call them programmatically.
 
 ## Related Projects
 

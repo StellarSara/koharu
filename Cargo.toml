@@ -1,9 +1,9 @@
 [workspace]
-members = ["comic-text-detector", "koharu", "lama", "llm", "manga-ocr"]
+members = ["comic-text-detector", "koharu", "lama", "llm", "manga-ocr", "paddle-ocr"]
 resolver = "3"
 
 [workspace.package]
-version = "0.7.2"
+version = "0.7.3"
 edition = "2024"
 description = "Manga translation tools"
 license-file = "LICENSE"
@@ -16,6 +16,7 @@ keywords = ["manga", "ocr", "translation", "deep_learning", "computer_vision"]
 [workspace.dependencies]
 comic-text-detector = { path = "./comic-text-detector" }
 manga-ocr = { path = "./manga-ocr" }
+paddle-ocr = { path = "./paddle-ocr" }
 lama = { path = "./lama" }
 llm = { path = "./llm" }
 

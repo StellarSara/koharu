@@ -81,6 +81,42 @@ pub async fn ocr(
 }
 
 #[tauri::command]
+pub async fn ocr_paddle(
+    state: State<'_, AppState>,
+    model: State<'_, Arc<onnx::Model>>,
+    index: usize,
+) -> Result<Document> {
+    let mut state = state.write().await;
+    let document = state
+        .documents
+        .get_mut(index)
+        .ok_or_else(|| anyhow::anyhow!("Document not found"))?;
+
+    let text_blocks = model.ocr_paddle(&document.image, &document.text_blocks).await?;
+    document.text_blocks = text_blocks;
+
+    Ok(document.clone())
+}
+
+#[tauri::command]
+pub async fn detect_and_ocr_paddle(
+    state: State<'_, AppState>,
+    model: State<'_, Arc<onnx::Model>>,
+    index: usize,
+) -> Result<Document> {
+    let mut state = state.write().await;
+    let document = state
+        .documents
+        .get_mut(index)
+        .ok_or_else(|| anyhow::anyhow!("Document not found"))?;
+
+    let text_blocks = model.detect_and_ocr_paddle(&document.image).await?;
+    document.text_blocks = text_blocks;
+
+    Ok(document.clone())
+}
+
+#[tauri::command]
 pub async fn inpaint(
     state: State<'_, AppState>,
     model: State<'_, Arc<onnx::Model>>,

@@ -11,6 +11,8 @@ type AppState = {
   scale: number
   showSegmentationMask: boolean
   showInpaintedImage: boolean
+  // OCR engine selection
+  ocrEngine: 'manga-ocr' | 'paddleocr'
   // LLM state
   llmModels: string[]
   llmSelectedModel?: string
@@ -23,8 +25,10 @@ type AppState = {
   setScale: (scale: number) => void
   setShowSegmentationMask: (show: boolean) => void
   setShowInpaintedImage: (show: boolean) => void
+  setOcrEngine: (engine: 'manga-ocr' | 'paddleocr') => void
   detect: (confThreshold: number, nmsThreshold: number) => Promise<void>
   ocr: () => Promise<void>
+  detectAndOcrPaddle: () => Promise<void>
   inpaint: (dilateKernelSize: number, erodeDistance: number) => Promise<void>
   // LLM actions
   llmList: () => Promise<void>
@@ -42,6 +46,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   scale: 100,
   showSegmentationMask: false,
   showInpaintedImage: false,
+  ocrEngine: 'manga-ocr',
   llmModels: [],
   llmSelectedModel: undefined,
   llmReady: false,
@@ -67,6 +72,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   setShowInpaintedImage: (show: boolean) => {
     set({ showInpaintedImage: show })
   },
+  setOcrEngine: (engine: 'manga-ocr' | 'paddleocr') => {
+    set({ ocrEngine: engine })
+  },
   detect: async (confThreshold: number, nmsThreshold: number) => {
     const index = get().currentDocumentIndex
     const doc: Document = await invoke('detect', {
@@ -84,7 +92,26 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   ocr: async () => {
     const index = get().currentDocumentIndex
-    const doc: Document = await invoke('ocr', { index })
+    const engine = get().ocrEngine
+    
+    let doc: Document
+    if (engine === 'paddleocr') {
+      doc = await invoke('ocr_paddle', { index })
+    } else {
+      doc = await invoke('ocr', { index })
+    }
+    
+    set({
+      documents: [
+        ...get().documents.slice(0, index),
+        doc,
+        ...get().documents.slice(index + 1),
+      ],
+    })
+  },
+  detectAndOcrPaddle: async () => {
+    const index = get().currentDocumentIndex
+    const doc: Document = await invoke('detect_and_ocr_paddle', { index })
     set({
       documents: [
         ...get().documents.slice(0, index),

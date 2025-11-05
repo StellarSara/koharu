@@ -109,10 +109,36 @@ function DetectionPanel() {
   const [conf, setConf] = useState(0.5)
   const [nms, setNms] = useState(0.4)
 
-  const { detect, ocr } = useAppStore()
+  const { detect, ocr, detectAndOcrPaddle, ocrEngine, setOcrEngine } = useAppStore()
 
   return (
     <div className='flex flex-col gap-3'>
+      <div>
+        <div className='mb-1 text-sm'>OCR Engine</div>
+        <Select.Root value={ocrEngine} onValueChange={setOcrEngine}>
+          <Select.Trigger className='inline-flex w-full items-center justify-between gap-2 rounded border border-neutral-200 bg-white px-2 py-1 text-sm hover:bg-neutral-50'>
+            <Select.Value />
+          </Select.Trigger>
+          <Select.Portal>
+            <Select.Content className='min-w-56 rounded-md bg-white p-1 shadow-sm'>
+              <Select.Viewport>
+                <Select.Item
+                  value='manga-ocr'
+                  className='select-none rounded px-3 py-1.5 text-sm outline-none hover:bg-black/5 data-[state=checked]:bg-black/5'
+                >
+                  <Select.ItemText>Manga OCR (Japanese)</Select.ItemText>
+                </Select.Item>
+                <Select.Item
+                  value='paddleocr'
+                  className='select-none rounded px-3 py-1.5 text-sm outline-none hover:bg-black/5 data-[state=checked]:bg-black/5'
+                >
+                  <Select.ItemText>PaddleOCR (Chinese)</Select.ItemText>
+                </Select.Item>
+              </Select.Viewport>
+            </Select.Content>
+          </Select.Portal>
+        </Select.Root>
+      </div>
       <LabeledSlider
         label='Confidence threshold'
         min={0.1}
@@ -129,17 +155,29 @@ function DetectionPanel() {
         value={nms}
         onChange={setNms}
       />
-      <div className='flex items-center justify-center gap-2'>
-        <ActionButton
-          label='Detect'
-          tooltip='Run text detection on current page'
-          onClick={() => detect(conf, nms)}
-        />
-        <ActionButton
-          label='OCR'
-          tooltip='Recognize text for detected regions'
-          onClick={ocr}
-        />
+      <div className='flex flex-col gap-2'>
+        <div className='flex items-center justify-center gap-2'>
+          <ActionButton
+            label='Detect'
+            tooltip='Run text detection on current page'
+            onClick={() => detect(conf, nms)}
+          />
+          <ActionButton
+            label='OCR'
+            tooltip='Recognize text for detected regions'
+            onClick={ocr}
+          />
+        </div>
+        {ocrEngine === 'paddleocr' && (
+          <div className='flex items-center justify-center'>
+            <ActionButton
+              label='Detect+OCR'
+              width='w-full'
+              tooltip='PaddleOCR full pipeline (detect and recognize in one step)'
+              onClick={detectAndOcrPaddle}
+            />
+          </div>
+        )}
       </div>
     </div>
   )

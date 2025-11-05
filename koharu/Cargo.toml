@@ -13,6 +13,7 @@ keywords.workspace = true
 [dependencies]
 comic-text-detector = { workspace = true }
 manga-ocr = { workspace = true }
+paddle-ocr = { workspace = true }
 lama = { workspace = true }
 llm = { workspace = true }
 anyhow = { workspace = true }
@@ -42,6 +43,7 @@ cuda = [
     "ort/cuda",
     "comic-text-detector/cuda",
     "manga-ocr/cuda",
+    "paddle-ocr/cuda",
     "lama/cuda",
     "llm/cuda",
 ]

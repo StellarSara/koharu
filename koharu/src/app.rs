@@ -65,6 +65,8 @@ pub fn run() -> Result<()> {
             command::open_documents,
             command::detect,
             command::ocr,
+            command::ocr_paddle,
+            command::detect_and_ocr_paddle,
             command::inpaint,
             command::llm_list,
             command::llm_load,

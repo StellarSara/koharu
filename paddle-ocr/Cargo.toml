@@ -1,0 +1,22 @@
+[package]
+name = "paddle-ocr"
+version.workspace = true
+edition.workspace = true
+license-file.workspace = true
+
+[[bin]]
+name = "paddle-ocr"
+path = "src/main.rs"
+
+[dependencies]
+hf-hub.workspace = true
+image.workspace = true
+ort.workspace = true
+anyhow.workspace = true
+ndarray.workspace = true
+clap = { workspace = true, optional = true }
+
+[features]
+cuda = []
+default = ["binary"]
+binary = ["dep:clap"]
